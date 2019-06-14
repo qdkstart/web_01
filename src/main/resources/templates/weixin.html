@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript">
+        // 对浏览器的UserAgent进行正则匹配，不含有微信独有标识的则为其他浏览器
+        var useragent = navigator.userAgent;
+        if (useragent.match(/MicroMessenger/i) != 'MicroMessenger') {
+            // 这里警告框会阻塞当前页面继续加载
+            alert('已禁止本次访问：您必须使用微信内置浏览器访问本页面！');
+            // 以下代码是用javascript强行关闭当前页面
+            var opened = window.open('about:blank', '_self');
+            opened.opener = null;
+            opened.close();
+        }
+    </script>
+
+    <script type="text/javascript">
+        function pay() {
+            if (typeof WeixinJSBridge == "undefined") {
+                if (document.addEventListener) {
+                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+                } else if (document.attachEvent) {
+                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
+                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+                }
+            } else {
+                //调用预付单生成接口
+                toggleLoadingToast(true, '正在获取支付数据');
+                $.getJSON("debtWxpay.action?saleno=${param.saleno}&vipcardno=${param.vipcardno}&xjtotal=${debtlist.zttotal}", function(data, status) {
+                    if (data.code == '1') {
+                        toggleLoadingToast(false);
+                        invokeBridge(data.data);
+                    } else {
+                        alert(data.msg);
+                    }
+                })
+            }
+        }
+        //调用微信支付接口
+        function invokeBridge(data) {
+            WeixinJSBridge.invoke('getBrandWCPayRequest', {
+                "appId" : data.appId, //公众号名称，由商户传入
+                "timeStamp" : data.timeStamp, //时间戳，自1970年以来的秒数
+                "nonceStr" : data.nonceStr, //随机串
+                "package" : data.package,
+                "signType" : "MD5", //微信签名方式:
+                "paySign" : data.paySign
+                //微信签名
+            }, function(res) {
+                WeixinJSBridge.log(res.err_msg);
+                if (res.err_msg == "get_brand_wcpay_request:cancel") {
+                    window.location.href = 'paycancel.jsp';
+                }
+                if (res.err_msg == "get_brand_wcpay_request:ok") {
+                    window.location.href = 'success.jsp';
+                }
+            });
+        }
+        //微信toast提示
+        function toggleLoadingToast(show, content) {
+            var $loadingToast = $('#loadingToast');
+            if (content !== undefined) {
+                $loadingToast.find('.weui-toast__content').text(content);
+            }
+            if (show) {
+                if ($loadingToast.css('display') != 'none')
+                    return;
+                $loadingToast.fadeIn(0);
+            } else {
+                if ($loadingToast.css('display') == 'none')
+                    return;
+                $loadingToast.fadeOut(0);
+            }
+        }
+    </script>
+    <script type="text/javascript">
+        function pay() {
+            if (typeof WeixinJSBridge == "undefined") {
+                if (document.addEventListener) {
+                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+                } else if (document.attachEvent) {
+                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
+                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+                }
+            } else {
+                //调用预付单生成接口
+                toggleLoadingToast(true, '正在获取支付数据');
+                $.getJSON("debtWxpay.action?saleno=${param.saleno}&vipcardno=${param.vipcardno}&xjtotal=${debtlist.zttotal}", function(data, status) {
+                    if (data.code == '1') {
+                        toggleLoadingToast(false);
+                        invokeBridge(data.data);
+                    } else {
+                        alert(data.msg);
+                    }
+                })
+            }
+        }
+        //调用微信支付接口
+        function invokeBridge(data) {
+            WeixinJSBridge.invoke('getBrandWCPayRequest', {
+                "appId" : data.appId, //公众号名称，由商户传入
+                "timeStamp" : data.timeStamp, //时间戳，自1970年以来的秒数
+                "nonceStr" : data.nonceStr, //随机串
+                "package" : data.package,
+                "signType" : "MD5", //微信签名方式:
+                "paySign" : data.paySign
+                //微信签名
+            }, function(res) {
+                WeixinJSBridge.log(res.err_msg);
+                if (res.err_msg == "get_brand_wcpay_request:cancel") {
+                    window.location.href = 'paycancel.jsp';
+                }
+                if (res.err_msg == "get_brand_wcpay_request:ok") {
+                    window.location.href = 'success.jsp';
+                }
+            });
+        }
+        //微信toast提示
+        function toggleLoadingToast(show, content) {
+            var $loadingToast = $('#loadingToast');
+            if (content !== undefined) {
+                $loadingToast.find('.weui-toast__content').text(content);
+            }
+            if (show) {
+                if ($loadingToast.css('display') != 'none')
+                    return;
+                $loadingToast.fadeIn(0);
+            } else {
+                if ($loadingToast.css('display') == 'none')
+                    return;
+                $loadingToast.fadeOut(0);
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="weixinpay">
+    <a class="weui-btn" id="confirm" type="submit" style="width:70%; border-radius: 0px; font-size: 16px;" onclick="pay();">去付款</a>
+</div>
+
+</body>
+</html>
